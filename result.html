@@ -1,337 +1,104 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>面试分析报告 | TechMock Pro</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        .ai-feedback {
-    background: #f8fff0;
-    border-radius: 8px;
-    padding: 15px;
-    margin-top: 15px;
-    border-left: 3px solid #8BC34A;
-}
-
-.ai-feedback strong {
-    color: #689F38;
-    display: block;
-    margin-bottom: 10px;
-}
-
-.ai-feedback ul {
-    list-style: none;
-    padding-left: 0;
-}
-
-.ai-feedback li {
-    padding: 8px 12px;
-    margin: 6px 0;
-    background: rgba(139, 195, 74, 0.1);
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.ai-feedback li::before {
-    content: '';
-    width: 8px;
-    height: 8px;
-    background: #8BC34A;
-    border-radius: 50%;
-    display: inline-block;
-}
-
-.tech-term {
-    background: #e3f2fd;
-    color: #1565C0;
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-family: 'Consolas', monospace;
-    font-size: 0.9em;
-    border: 1px solid #90CAF9;
-}
-        :root {
-            --primary-color: #2A5CAA;
-            --secondary-color: #4CAF50;
-            --background: #f5f7fa;
-            --card-bg: #ffffff;
-        }
-
-        body {
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            background: var(--background);
-            line-height: 1.6;
-            margin: 0;
-            padding: 20px;
-            color: #333;
-        }
-
-        .back-btn {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            padding: 12px 24px;
-            background: var(--primary-color);
-            color: white;
-            border-radius: 30px;
-            text-decoration: none;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            transition: transform 0.2s, box-shadow 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .back-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
-
-        .container {
-            max-width: 1000px;
-            margin: 40px auto;
-            background: var(--card-bg);
-            border-radius: 16px;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.08);
-            padding: 40px;
-            position: relative;
-        }
-
-        h1 {
-            color: var(--primary-color);
-            font-size: 2.4em;
-            margin-bottom: 30px;
-            text-align: center;
-        }
-
-        .score-badge {
-            background: linear-gradient(135deg, var(--primary-color), #1E88E5);
-            color: white;
-            padding: 8px 20px;
-            border-radius: 20px;
-            font-weight: bold;
-            display: inline-block;
-            margin: 15px 0;
-        }
-
-        .question-card {
-            background: #f8f9ff;
-            border-left: 4px solid var(--primary-color);
-            border-radius: 8px;
-            padding: 20px;
-            margin: 25px 0;
-            transition: transform 0.2s;
-        }
-
-        .question-card:hover {
-            transform: translateX(10px);
-        }
-
-        h3 {
-            color: #1a237e;
-            margin-top: 0;
-            font-size: 1.2em;
-        }
-
-        ul {
-            padding-left: 20px;
-            margin: 10px 0;
-        }
-
-        li {
-            margin: 8px 0;
-            padding-left: 10px;
-            border-left: 2px solid #ddd;
-        }
-
-        hr {
-            border: 0;
-            height: 1px;
-            background: linear-gradient(to right, transparent, #ddd, transparent);
-            margin: 30px 0;
-        }
-
-        .tech-term {
-            background: #e8f4ff;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-family: 'Consolas', monospace;
-            font-size: 0.9em;
-        }
-
-        .analysis-section {
-            background: var(--card-bg);
-            padding: 25px;
-            border-radius: 12px;
-            margin: 20px 0;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-        }
-
-        #result-time {
-            text-align: center;
-            color: #666;
-            font-size: 0.9em;
-            margin: 20px 0;
-        }
-
-        @media (max-width: 768px) {
-            .container {
-                padding: 20px;
-                margin: 20px;
-            }
-
-            h1 {
-                font-size: 1.8em;
-            }
-        }
-    </style>
+    <title>面试结果</title>
+    <link rel="stylesheet" href="result_result.css">
 </head>
 <body>
-    <a href="index.html" class="back-btn">
-        <i class="fas fa-arrow-left"></i>
-        返回主页
-    </a>
-
     <div class="container">
-        <div class="analysis-section">
-            <h1>📊 面试综合分析报告</h1>
-            <div class="score-badge">得分：65/100 • 中等水平</div>
-            <p class="analysis-text">
-                您在面试中展现了扎实的技术基础，特别是在Python应用和系统优化方面表现突出。用时32分钟，整体表现位于前45%的候选人之列。通过多模态AI分析，我们注意到：
-            </p>
-            <ul class="performance-list">
-                <li>👍 优势：问题1、4回答流畅，技术细节表述清晰</li>
-                <li>💡 提升点：问题2、3、5时出现短暂紧张状态</li>
-                <li>📈 建议：加强JVM底层原理和分布式系统的知识体系</li>
-            </ul>
-        </div>
-
-        <!-- 问题卡片示例（根据实际内容重复此结构） -->
-        <div class="question-card">
-            <h3>你最熟悉的编程语言是什么？</h3>
-            <div class="answer-section">
-                <p class="user-answer">
-                    我主要使用Python开发电商库存系统，关键技术点包括：
-                </p>
-                <ul>
-                    <li>使用<span class="tech-term">Celery</span>实现异步任务处理</li>
-                    <li>基于<span class="tech-term">Pandas</span>的数据分析流水线</li>
-                    <li>通过<span class="tech-term">Django REST Framework</span>构建API</li>
+        <div class="analyse">
+            <h1>面试总体分析</h1>
+            <a>----您在面试答题环节中获得了35分，总用时为32分钟，成绩位于中等区间。通过摄像头捕捉和AI语音智能分析，我们注意到您在回答第一题和第四题时表现得非常从容自信。
+                然而，在回答第二、第三和第五题时，您的面部表情略显紧张，这可能是因为这些题目超出了您的准备范围。接下来，我将为您详细解析这些面试题，并提供一些建议
+                ，希望能帮助您在未来的面试中表现得更加出色。
+            <hr>
+            </a>
+            <div class="bar">
+            <h3>你最熟悉的编程语言是什么？能否举例说明你在项目中的应用？</h3>
+            <h3>回答：</h3>
+            <a>我最熟悉的编程语言是Python。以下是一个我在项目中应用Python的实例：</a><br>
+            <a>我曾参与开发一个电商平台的库存管理系统，目标是实现库存数据的实时更新、预警和报表生成。</a>
+                实践中曾通过对象池复用降低JVM Full GC频率，使系统停顿时间减少70%</a>
+                <ul>库存实时更新：
+                <li>使用Django开发REST API，接收来自仓库扫描设备的数据，
+                并通过Celery异步任务处理高并发请求，确保库存数据的实时性和准确性。</li></ul>
+                <ul>库存预警系统：
+                    <li>编写Python脚本，定时检查库存水平，当库存低于设定阈值时，自动发送邮件通知采购团队。</li>
                 </ul>
-                <div class="ai-feedback">
-                    <strong>专家建议：</strong>可补充说明性能优化指标（如QPS提升数据）
-                </div>
+                <ul>数据报表生成：
+                    <li>使用Pandas对库存数据进行分析，生成每日、每周和每月的库存报表，并通过Django视图将报表导出为Excel文件。</li>
+                </ul>
+                <hr>
+            <h3>你如何处理内存管理和垃圾回收？</h3>
+            <h3>回答：</h3>
+            <a>「我的处理方式取决于语言特性：  
+                <ul>手动管理场景**（如C/C++）：  
+                <li>严格遵循`谁申请谁释放`原则，使用`RAII`模式封装资源（如智能指针）</li>  
+                <li>通过Valgrind/AddressSanitizer检测内存泄漏 </li> </ul>
+                <ul>自动GC场景**（如Java/Python）：  
+                <li>避免强引用循环（如Java使用WeakReference） </li> 
+                <li>注意大对象对GC停顿的影响（如分代收集优化）  </li>
+                <li>主动解除无用对象引用（如集合清空时置null）  </li>
+                </ul>
+                实践中曾通过对象池复用降低JVM Full GC频率，使系统停顿时间减少70%</a>
+            <hr>
+            <h3>你如何优化代码的性能？</h3>
+            <h3>回答：</h3>
+            <a>「我采用三步优化法：  
+                <ul>定位瓶颈**：使用Profiler工具（如VisualVM/pprof）分析CPU/Memory热点  </ul>
+                <ul>分层优化**：  
+                   <li>算法层：将O(n²)暴力搜索改为O(n)哈希查找  </li>
+                   <li>数据层：用数组替代链表提升缓存局部性  
+                   <li>系统层：批量处理减少IO次数（如数据库批量插入）  </ul>
+                <ul>验证效果**：通过基准测试对比优化前后指标  
+                案例：将递归DFS改为迭代+BFS，使树遍历内存占用下降90% </ul>
+                </a>
+            <hr>
+            <h3>你熟悉哪些数据结构？它们的优缺点是什么？</h3>
+            <h3>回答：</h3>
+            <a>「我常用的七种结构及特性：  
+               <ul>| 结构        | 优点                  | 缺点                  | 典型场景            |  </ul>
+               <ul> |-------------|-----------------------|-----------------------|-------------------|  </ul>
+               <ul>| 数组        | 随机访问O(1)          | 插入删除O(n)          | 快速查询          |  </ul>
+               <ul>| 链表        | 动态扩展，插入O(1)    | 随机访问O(n)          | LRU缓存           |  </ul>
+            <ul> | 哈希表      | 平均查询O(1)          | 哈希冲突可能退化       | 字典存储          |  </ul>
+            <ul>  | 红黑树      | 自平衡，稳定O(logn)   | 实现复杂度高           | TreeMap/数据库索引|  </ul>
+            <ul>  | 堆          | 极值获取O(1)          | 只能部分有序           | 优先级队列        |  </ul>
+            <ul>  | 图          | 关系建模灵活          | 算法复杂度普遍较高     | 社交网络          |  </ul>
+            <ul>  | 跳表        | 查询接近O(logn)       | 空间开销较大           | Redis有序集合     |  </ul>
+                实际开发中会根据数据规模、操作频率、有序性需求综合选择
+                
+            </a>
+            <hr>
+            <h3>请解释一下哈希表的工作原理。</h3>
+            <h3>回答：</h3>
+            <a>「哈希表通过三要素实现高效存取：  
+                <ul>哈希函数**：将任意键映射到固定区间（如取模运算）</ul>  
+                <ul>冲突解决**：  
+                   <li>开放寻址法：线性探测直到找到空槽  </li>
+                   <li>链式地址法：桶+链表存储冲突元素（Java8后链表转红黑树） </li> </ul>
+                <ul>动态扩容**：当负载因子>阈值（通常0.75）时，重建桶数组  
+                例如Java HashMap在put时先计算key的hashCode，通过`(n-1)&hash`确定桶位，
+                若发生哈希碰撞则采用链表处理，当链表长度超过8则转为红黑树优化查询效率</ul></a>
             </div>
-        </div>
-
-        <!-- 内存管理问题卡片 -->
-<div class="question-card">
-    <h3>如何处理内存管理和垃圾回收？</h3>
-    <div class="answer-section">
-        <p class="user-answer">
-            我的内存管理策略根据语言特性调整：
-        </p>
-        <ul>
-            <li>C/C++中使用<span class="tech-term">RAII模式</span>和智能指针</li>
-            <li>Java场景采用<span class="tech-term">分代收集优化</span></li>
-            <li>通过<span class="tech-term">对象池复用</span>减少GC频率</li>
-        </ul>
-        <div class="ai-feedback">
-            <strong>专家建议：</strong>
-            <ul>
-                <li>✅ 可补充说明不同GC算法（如G1/ZGC）的调优经验</li>
-                <li>✅ 建议添加内存泄漏排查的具体工具使用案例</li>
-                <li>⚠️ 注意解释弱引用与软引用的适用场景区别</li>
-            </ul>
+        
+        
+        <h1>感谢参与模拟面试！</h1>
+    </div>
+        <div>
+        <p>你的面试结果已保存。</p>
+        <p id="result-time"></p>
+        <p><a href="web project.html">返回首页</a></p>
         </div>
     </div>
-</div>
-
-<!-- 代码优化问题卡片 -->
-<div class="question-card">
-    <h3>如何优化代码性能？</h3>
-    <div class="answer-section">
-        <p class="user-answer">
-            采用三步优化法：
-        </p>
-        <ul>
-            <li>使用<span class="tech-term">Profiler工具</span>定位瓶颈</li>
-            <li>算法层优化时间复杂度</li>
-            <li>通过<span class="tech-term">批量处理</span>减少IO</li>
-        </ul>
-        <div class="ai-feedback">
-            <strong>专家建议：</strong>
-            <ul>
-                <li>✅ 优秀的多层优化思路，可增加具体指标数据</li>
-                <li>💡 建议补充缓存策略（如Redis）的应用案例</li>
-                <li>📌 需要区分CPU密集与IO密集场景的不同优化策略</li>
-            </ul>
-        </div>
-    </div>
-</div>
-
-<!-- 数据结构问题卡片 -->
-<div class="question-card">
-    <h3>熟悉哪些数据结构及其优缺点？</h3>
-    <div class="answer-section">
-        <p class="user-answer">
-            掌握七种核心数据结构：
-        </p>
-        <ul>
-            <li>哈希表实现<span class="tech-term">O(1)查询</span></li>
-            <li>跳表在Redis中的应用</li>
-            <li>红黑树的<span class="tech-term">自平衡特性</span></li>
-        </ul>
-        <div class="ai-feedback">
-            <strong>专家建议：</strong>
-            <ul>
-                <li>👍 结构对比清晰，建议增加实际应用场景</li>
-                <li>🔧 可举例说明B+树在数据库索引中的优势</li>
-                <li>💡 需要补充并发场景下的线程安全数据结构选择</li>
-            </ul>
-        </div>
-    </div>
-</div>
-
-<!-- 哈希表原理问题卡片 -->
-<div class="question-card">
-    <h3>解释哈希表工作原理</h3>
-    <div class="answer-section">
-        <p class="user-answer">
-            基于三个核心机制：
-        </p>
-        <ul>
-            <li>哈希函数实现键映射</li>
-            <li><span class="tech-term">链式地址法</span>处理冲突</li>
-            <li>动态扩容机制</li>
-        </ul>
-        <div class="ai-feedback">
-            <strong>专家建议：</strong>
-            <ul>
-                <li>✅ 正确掌握基础原理，建议补充哈希攻击防护方案</li>
-                <li>💡 可对比不同语言实现差异（如Python字典的开放寻址法）</li>
-                <li>📈 需要解释负载因子与性能曲线的关系</li>
-            </ul>
-        </div>
-    </div>
-</div>
-
-
-        <div class="final-section">
-            <h1>🎉 感谢参与模拟面试！</h1>
-            <p>您的面试记录已加密保存，30天内可随时查看。</p>
-            <p id="result-time"></p>
-        </div>
-    </div>
-
     <script>
+        // 从 URL 参数中获取用时并显示
         const urlParams = new URLSearchParams(window.location.search);
         const time = urlParams.get('time');
         if (time) {
-            document.getElementById('result-time').textContent = `⏱️ 总用时: ${time}`;
+            document.getElementById('result-time').textContent = `总用时: ${time}`;
         }
     </script>
 </body>

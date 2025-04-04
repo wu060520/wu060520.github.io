@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -185,32 +184,16 @@
             data() {
                 return {
                     user: {
-                        name: '',
-                        dob: '',
-                        education: '',
-                        school: '',
-                        major: '',
-                        photo: null, // 初始化为null
-                        videos: []
+                        name: '张三',
+                        dob: '2005-01-01',
+                        education: '本科',
+                        school: '燕山大学',
+                        major: '计算机科学与技术',
+                        photo: 'https://via.placeholder.com/200', // 默认照片路径
+                        videos: [] // 存储视频
                     },
-                    modalVisible: false,
-                    modalImage: ''
-                };
-            },
-            mounted() {
-                // 从localStorage加载用户数据
-                const userData = JSON.parse(localStorage.getItem('userData')) || {};
-                const userMedia = JSON.parse(localStorage.getItem('userMedia')) || {
-                    photo: null,
-                    videos: []
-                };
-
-                // 合并数据到user对象
-                this.user = {
-                    ...this.user,
-                    ...userData,
-                    photo: userMedia.photo,
-                    videos: userMedia.videos
+                    modalVisible: false, // 模态框显示状态
+                    modalImage: '' // 用于存储放大后的图片路径
                 };
             },
             methods: {
@@ -229,22 +212,18 @@
                         const reader = new FileReader();
                         reader.onload = (e) => {
                             this.user.photo = e.target.result;
-                            // 保存媒体数据
-                            this.saveMediaData();
                         };
                         reader.readAsDataURL(file);
                     }
                 },
                 deleteVideo(index) {
                     this.user.videos.splice(index, 1);
-                    this.saveMediaData();
                 },
                 uploadVideo(event) {
                     const file = event.target.files[0];
                     if (file && this.user.videos.length < 3) {
                         const videoUrl = URL.createObjectURL(file);
                         this.user.videos.push(videoUrl);
-                        this.saveMediaData();
                     }
                 },
                 openModal(image) {
@@ -253,14 +232,6 @@
                 },
                 closeModal() {
                     this.modalVisible = false;
-                },
-                saveMediaData() {
-                    // 单独保存媒体数据到userMedia
-                    const userMedia = {
-                        photo: this.user.photo,
-                        videos: this.user.videos
-                    };
-                    localStorage.setItem('userMedia', JSON.stringify(userMedia));
                 },
                 sendMessage() {
                     alert('私信功能正在开发中，敬请期待！');
