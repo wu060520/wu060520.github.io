@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能获奖证书验证系统</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        .back-btn {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background: #3498db;
+    color: white;
+    padding: 8px 20px;
+    border-radius: 20px;
+    text-decoration: none;
+    font-size: 14px;
+    transition: all 0.3s;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+}
+
+.back-btn:hover {
+    background: #2980b9;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+}
+
+.container {
+    position: relative; /* 新增这一行保证定位正确 */
+    /* 原有其他样式保持不变 */
+}
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            padding: 40px;
+        }
+
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            font-weight: 700;
+        }
+
+        .upload-section {
+            border: 3px dashed #3498db;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 30px;
+            transition: all 0.3s;
+        }
+
+        .upload-section:hover {
+            background: #f8f9fa;
+            transform: translateY(-2px);
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .custom-upload-btn {
+            background: #3498db;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            display: inline-block;
+            transition: all 0.3s;
+            font-size: 16px;
+        }
+
+        .custom-upload-btn:hover {
+            background: #2980b9;
+            transform: scale(1.05);
+        }
+
+        .preview-container {
+            display: none;
+            margin-top: 20px;
+        }
+
+        #imagePreview {
+            max-width: 300px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .analysis-result {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 30px;
+            display: none;
+        }
+
+        .result-title {
+            color: #2c3e50;
+            font-size: 1.5em;
+            margin-bottom: 15px;
+        }
+
+        .verdict {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin: 15px 0;
+        }
+
+        .confidence-meter {
+            height: 20px;
+            background: #eee;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            background: #3498db;
+            width: 0;
+            transition: width 1s ease;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            display: none;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        input[type="text"]:focus {
+            border-color: #3498db;
+            outline: none;
+            box-shadow: 0 0 8px rgba(52,152,219,0.3);
+        }
+
+        .submit-btn {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+            width: 100%;
+        }
+
+        .submit-btn:hover {
+            background: #219a52;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-btn">← 返回</a>
+        <h1>🏆 智能获奖证书验证系统</h1>
+
+        <div class="upload-section">
+            <form id="uploadForm">
+                <div class="form-group">
+                    <input type="text" id="certName" placeholder="请输入证书名称" required>
+                </div>
+                <input type="file" id="fileInput" class="file-input" accept="image/*" required>
+                <label for="fileInput" class="custom-upload-btn">📁 选择证书图片</label>
+                <div class="preview-container">
+                    <img id="imagePreview" alt="证书预览">
+                </div>
+                <button type="submit" class="submit-btn">开始智能验证分析</button>
+            </form>
+        </div>
+
+        <div class="loading">
+            <div class="spinner"></div>
+            <p>AI正在分析中，请稍候...</p>
+        </div>
+
+        <div class="analysis-result">
+            <h2 class="result-title">📊 分析结果</h2>
+            <div class="verdict"></div>
+            <div class="confidence-meter">
+                <div class="confidence-fill"></div>
+            </div>
+            <p>可信度评分：<span class="confidence-score">0</span>/100</p>
+            <div class="detailed-feedback">
+                <h3>🔍 详细分析：</h3>
+                <ul class="findings-list"></ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('uploadForm');
+        const fileInput = document.getElementById('fileInput');
+        const previewContainer = document.querySelector('.preview-container');
+        const imagePreview = document.getElementById('imagePreview');
+        const loading = document.querySelector('.loading');
+        const resultSection = document.querySelector('.analysis-result');
+
+        fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imagePreview.src = e.target.result;
+                    previewContainer.style.display = 'block';
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            // 显示加载状态
+            loading.style.display = 'block';
+            resultSection.style.display = 'none';
+
+            // 模拟AI分析过程
+            setTimeout(() => {
+                loading.style.display = 'none';
+                resultSection.style.display = 'block';
+
+                // 模拟分析结果
+                const verdicts = [
+                    {status: '真实可信', score: 92, color: '#27ae60'},
+                    {status: '疑似伪造', score: 35, color: '#e74c3c'},
+                    {status: '需要人工复核', score: 68, color: '#f1c40f'}
+                ];
+
+                const randomResult = verdicts[Math.floor(Math.random() * verdicts.length)];
+
+                document.querySelector('.verdict').textContent = `验证结果：${randomResult.status}`;
+                document.querySelector('.verdict').style.color = randomResult.color;
+                document.querySelector('.confidence-fill').style.width = `${randomResult.score}%`;
+                document.querySelector('.confidence-score').textContent = randomResult.score;
+
+                // 生成详细分析
+                const findings = [
+                    '证书边缘对齐度正常',
+                    '文字清晰度达到标准',
+                    '未检测到PS修改痕迹',
+                    '印章颜色分布均匀',
+                    '防伪特征匹配度良好'
+                ];
+
+                const list = document.querySelector('.findings-list');
+                list.innerHTML = findings.map(f => `<li>✅ ${f}</li>`).join('');
+
+                // 动画效果
+                document.querySelectorAll('.confidence-fill').forEach(el => {
+                    el.style.transition = 'width 1s ease';
+                });
+            }, 2000);
+        });
+    </script>
+</body>
+</html>

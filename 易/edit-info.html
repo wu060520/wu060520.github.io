@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>修改个人信息</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+    <div id="app" class="container mx-auto p-4">
+        <h1 class="text-3xl font-bold mb-6 text-center">修改个人信息</h1>
+
+        <!-- 用户基本信息 -->
+        <section class="bg-white p-6 rounded-lg shadow-md mb-8">
+            <form @submit.prevent="updateInfo">
+                <div class="mb-4">
+                    <label class="block text-gray-700">姓名:</label>
+                    <input type="text" v-model="user.name" class="border-2 border-gray-200 p-2 w-full" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700">出生年月日:</label>
+                    <input type="date" v-model="user.dob" class="border-2 border-gray-200 p-2 w-full" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700">学历:</label>
+                    <select v-model="user.education" class="border-2 border-gray-200 p-2 w-full">
+                        <option>本科</option>
+                        <option>硕士</option>
+                        <option>博士</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700">学校:</label>
+                    <input type="text" v-model="user.school" class="border-2 border-gray-200 p-2 w-full" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700">专业:</label>
+                    <input type="text" v-model="user.major" class="border-2 border-gray-200 p-2 w-full" required>
+                </div>
+                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-md">保存信息</button>
+                <button @click="goBack" class="ml-2 bg-gray-300 text-black px-4 py-2 rounded-md">返回</button>
+            </form>
+        </section>
+    </div>
+
+    <script>
+        const { createApp } = Vue
+
+        createApp({
+            data() {
+                return {
+                    user: {
+                        name: '',
+                        dob: '',
+                        education: '',
+                        school: '',
+                        major: ''
+                    }
+                };
+            },
+            mounted() {
+                this.loadUserData(); // 加载用户数据
+            },
+            methods: {
+                loadUserData() {
+                    const userData = JSON.parse(localStorage.getItem('userData'));
+                    if (userData) {
+                        this.user = userData; // 如果有存储的信息，则加载它们
+                    }
+                },
+                updateInfo() {
+                    localStorage.setItem('userData', JSON.stringify(this.user)); // 保存信息到 localStorage
+                    alert('信息已保存！');
+                    window.location.href = 'user-profile.html'; // 保存后返回主页面
+                },
+                goBack() {
+                    window.location.href = 'user-profile.html'; // 返回主页面
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
