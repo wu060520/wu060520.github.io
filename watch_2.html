@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>观看视频 - 视频分享平台</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    .watch-player {
+      width: 100%;
+      max-height: 500px;
+      background-color: #000;
+    }
+    .recommend-card {
+      display: flex;
+      margin-bottom: 15px;
+      cursor: pointer;
+    }
+    .recommend-card video {
+      width: 120px;
+      height: 70px;
+      object-fit: cover;
+      border-radius: 5px;
+    }
+    .recommend-info {
+      margin-left: 10px;
+      flex: 1;
+    }
+    .recommend-title {
+      font-weight: 500;
+      color: #333;
+      text-decoration: none;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .recommend-meta {
+      font-size: 12px;
+      color: #666;
+      margin-top: 5px;
+    }
+    .recommend-meta img {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      margin-right: 5px;
+    }
+  </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <div class="container">
+    <a class="navbar-brand" href="community.html">视频首页</a>
+  </div>
+</nav>
+
+<div class="container mt-4">
+  <div class="row">
+    <!-- 主视频展示 -->
+    <div class="col-md-8">
+      <div class="card mb-4">
+        <video class="watch-player" controls autoplay>
+          <source src="user_video2.mp4" type="video/mp4">
+          您的浏览器不支持 video 标签。
+        </video>
+        <div class="card-body">
+          <h5 class="card-title">反向拷问面试官？这场压力面试我居然翻盘了！</h5>
+          <div class="card-subtitle mb-2 text-muted d-flex align-items-center">
+            <img src="user2.jpg" alt="头像" style="width:30px; height:30px; border-radius:50%; margin-right:8px;">
+            <p class="mb-0">上传者：er</p>
+          </div>
+          <p class="text-muted mb-1">联系方式：13900139000</p>
+          <p class="card-text">💡 记录一次科技公司管培生终面经历，遭遇连环压力测试如何应对？
+            ⚠️ 踩坑点：初期紧张导致逻辑混乱（02:30处）
+            ✅ 翻盘关键：用STAR法则重构回答（04:10）+ 主动掌控节奏技巧（06:55）
+            🎁 彩蛋：最后反问环节如何让面试官当场认可？
+            适合：应届生/转行求职者 #压力面试 #应届生求职 #职场逆袭</p>
+          <p class="card-text"><small class="text-muted">浏览次数：1255</small></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 推荐视频（高人气） -->
+    <div class="col-md-4">
+      <h5 class="mb-3">🔥 推荐视频</h5>
+
+
+
+      <div class="recommend-card">
+        <video muted>
+          <source src="user_video2.mp4" type="video/mp4">
+        </video>
+        <div class="recommend-info">
+          <a href="watch.html?id=4&source=pdo2" class="recommend-title">
+            反向拷问面试官？这场压力面试我居然翻盘了！
+          </a>
+          <div class="recommend-meta">
+            <img src="user2.jpg" alt="头像">
+            <span>er</span>
+            <span>2345次观看</span>
+          </div>
+        </div>
+      </div>
+
+
+
+      <div class="recommend-card">
+        <video muted>
+          <source src="user_video3.mp4" type="video/mp4">
+        </video>
+        <div class="recommend-info">
+          <a href="watch.html?id=6&source=pdo2" class="recommend-title">
+            海外远程面试全记录｜英文自我介绍模板+跨文化沟通技巧
+          </a>
+          <div class="recommend-meta">
+            <img src="user3.png" alt="头像">
+            <span>as</span>
+            <span>3210次观看</span>
+          </div>
+        </div>
+      </div>
+
+
+    </div>
+  </div>
+
+  <!-- 评论区 -->
+  <div class="card p-3">
+    <h5 class="mb-3">评论区</h5>
+    <div class="text-center py-4 text-muted">
+      暂无评论
+    </div>
+  </div>
+
+<footer class="bg-light text-center py-4 mt-5">
+  <div class="container">
+    <p class="mb-0">© 2025 视频分享平台. 保留所有权利.</p>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // 自动播放推荐视频的悬停效果
+  document.querySelectorAll('.recommend-card video').forEach(video => {
+    video.addEventListener('mouseover', () => video.play());
+    video.addEventListener('mouseout', () => {
+      video.pause();
+      video.currentTime = 0;
+    });
+  });
+</script>
+</body>
+</html>
