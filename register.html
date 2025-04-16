@@ -1,0 +1,94 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>注册</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="auth-container">
+        <h2>注册</h2>
+        <form id="register-form">
+            <div>
+                <label for="register-username">用户名:</label>
+                <input type="text" id="register-username" name="username" required>
+                <div class="error-message" id="register-username-error">用户名不能为空</div>
+            </div>
+            <div>
+                <label for="register-password">密码:</label>
+                <input type="password" id="register-password" name="password" required>
+                <div class="error-message" id="register-password-error">密码不能为空</div>
+                <div class="password-strength" id="password-strength">密码强度：弱</div>
+            </div>
+            <button type="submit" id="register-btn" disabled>注册</button>
+        </form>
+        <div class="switch-auth">
+            已有账号？<a href="login.html">登录</a>
+        </div>
+    </div>
+
+    <script>
+        const registerForm = document.getElementById('register-form');
+        const passwordInput = document.getElementById('register-password');
+        const passwordStrength = document.getElementById('password-strength');
+        const registerBtn = document.getElementById('register-btn');
+
+        // 密码强度检查函数
+        function checkPasswordStrength(password) {
+            if (password.length < 6) {
+                return '弱';
+            } else if (/[A-Za-z]/.test(password) && /[0-9]/.test(password)) {
+                return password.length >= 8 && /[^A-Za-z0-9]/.test(password) ? '强' : '中';
+            } else {
+                return '弱';
+            }
+        }
+
+        // 实时检查密码强度
+        passwordInput.addEventListener('input', () => {
+            const password = passwordInput.value;
+            const strength = checkPasswordStrength(password);
+
+            // 更新密码强度显示
+            passwordStrength.textContent = `密码强度：${strength}`;
+            passwordStrength.className = `password-strength ${strength}`;
+
+            // 根据密码强度启用或禁用注册按钮
+            if (strength === '弱') {
+                registerBtn.disabled = true;
+            } else {
+                registerBtn.disabled = false;
+            }
+        });
+
+        // 注册表单提交
+        registerForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const username = document.getElementById('register-username').value;
+            const password = document.getElementById('register-password').value;
+
+            if (!username) {
+                document.getElementById('register-username-error').style.display = 'block';
+            } else {
+                document.getElementById('register-username-error').style.display = 'none';
+            }
+
+            if (!password) {
+                document.getElementById('register-password-error').style.display = 'block';
+            } else {
+                document.getElementById('register-password-error').style.display = 'none';
+            }
+
+            if (username && password) {
+                // 存储用户信息到 localStorage
+                const user = { username, password };
+                localStorage.setItem(username, JSON.stringify(user));
+                alert('注册成功！');
+                window.location.href = 'login.html'; // 跳转到登录页面
+            }
+        });
+    </script>
+</body>
+</html>

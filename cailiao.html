@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>智能证书验证系统</title>
+  <style>
+    body { background: #f0f4f8; font-family: 'Segoe UI', sans-serif; }
+    .container { max-width: 700px; margin: 2rem auto; background: white; padding: 30px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+    h1 { text-align: center; color: #2c3e50; margin-bottom: 20px; }
+    .preview-container { border: 2px dashed #bdc3c7; border-radius: 8px; padding: 1rem; margin: 1rem 0; text-align: center; cursor: pointer; }
+    #previewImg { max-width: 100%; max-height: 300px; object-fit: contain; border-radius: 6px; display: none; }
+    .submit-btn { background: #A393EB; color: white; border: none; padding: 14px; border-radius: 25px; font-size: 16px; width: 100%; cursor: pointer; }
+    .submit-btn:hover { background: #219a52; }
+    input[type="file"] { display: none; }
+    input[type="text"] { width: 100%; padding: 10px; font-size: 16px; margin-bottom: 20px; border-radius: 8px; border: 1px solid #ccc; }
+    .loading, .analysis-result { text-align: center; display: none; }
+    .spinner { width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; animation: spin 1s linear infinite; margin: auto; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    .confidence-fill { height: 20px; background: #3498db; transition: width 1s ease; border-radius: 10px; }
+    .confidence-meter { height: 20px; background: #ddd; border-radius: 10px; overflow: hidden; margin: 15px 0; }
+  </style>
+  <!-- 引入 Tesseract.js 库 -->
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@2/dist/tesseract.min.js"></script>
+</head>
+<body>
+<div class="container">
+  <h1>🏅 智能证书验证系统</h1>
+  <form id="uploadForm">
+    <input type="text" name="certName" placeholder="请输入证书全称（保持和证书上一致）" required>
+    <div class="preview-container" id="previewContainer">
+      <div id="uploadPrompt">📁 点击选择或拖拽图片到此区域</div>
+      <img id="previewImg" alt="证书预览">
+    </div>
+    <input type="file" id="fileInput" name="file" accept="image/*" required>
+    <button type="submit" class="submit-btn">开始智能验证</button>
+  </form>
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <p>AI正在识别图片文字，请稍候...</p>
+  </div>
+  <div class="analysis-result" id="analysisResult">
+    <h2>📊 分析结果</h2>
+    <div class="verdict" id="verdict" style="font-size: 1.3em; font-weight: bold;"></div>
+    <div class="confidence-meter"><div class="confidence-fill" id="confidenceFill"></div></div>
+    <p>可信度评分：<span class="confidence-score" id="confidenceScore">0</span>/100</p>
+    <ul class="details-list" id="detailsList"></ul>
+  </div>
+</div>
+
+<script>
+  const fileInput = document.getElementById('fileInput');
+  const previewContainer = document.getElementById('previewContainer');
+  const previewImg = document.getElementById('previewImg');
+  const uploadPrompt = document.getElementById('uploadPrompt');
+  const uploadForm = document.getElementById('uploadForm');
+  const loadingDiv = document.getElementById('loading');
+  const analysisResult = document.getElementById('analysisResult');
+  const verdictEl = document.getElementById('verdict');
+  const confidenceFill = document.getElementById('confidenceFill');
+  const confidenceScore = document.getElementById('confidenceScore');
+  const detailsList = document.getElementById('detailsList');
+
+  // 点击预览区域选择文件
+  previewContainer.addEventListener('click', () => fileInput.click());
+
+  // 更新图片预览
+  fileInput.addEventListener('change', (e) => {
+    if (e.target.files.length > 0) {
+      updatePreview(e.target.files[0]);
+    }
+  });
+
+  function updatePreview(file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      previewImg.src = e.target.result;
+      previewImg.style.display = 'block';
+      uploadPrompt.style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+  }
+
+  // 表单提交，调用 Tesseract.js 进行 OCR 识别
+  uploadForm.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const certName = this.certName.value.trim();
+    const file = fileInput.files[0];
+    if (!file || !certName) {
+      alert("请输入证书名称并选择图片文件！");
+      return;
+    }
+    // 显示加载动画，隐藏结果区域
+    loadingDiv.style.display = 'block';
+    analysisResult.style.display = 'none';
+
+    try {
+      // 使用 Tesseract.js 对图片进行 OCR 识别
+      const { data: { text } } = await Tesseract.recognize(file, 'chi_sim', {
+        logger: m => console.log(m)
+      });
+
+      // 简单比对识别结果是否包含用户输入的证书名称（不区分大小写）
+      const isMatch = text.toLowerCase().indexOf(certName.toLowerCase()) !== -1;
+      const verdict = isMatch ? "✅ 证书验证通过，匹配成功！" : "❌ 证书验证失败，未能匹配";
+      const score = isMatch ? 90 : 30;
+      const details = [
+        "识别内容：" + (text.length > 100 ? text.substr(0, 100) + "..." : text),
+        "目标证书名称：" + certName,
+        "匹配状态：" + (isMatch ? "匹配成功" : "匹配失败")
+      ];
+
+      // 显示结果
+      verdictEl.textContent = `验证结果：${verdict}`;
+      verdictEl.style.color = isMatch ? '#27ae60' : '#c0392b';
+      confidenceFill.style.width = `${score}%`;
+      confidenceScore.textContent = score;
+      detailsList.innerHTML = details.map(d => `<li>✅ ${d}</li>`).join('');
+    } catch (err) {
+      alert(`识别失败：${err.message}`);
+      console.error('OCR识别错误:', err);
+    } finally {
+      loadingDiv.style.display = 'none';
+      analysisResult.style.display = 'block';
+    }
+  });
+</script>
+</body>
+</html>

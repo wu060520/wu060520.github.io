@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VR英语面试模拟器</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- 添加Three.js库 -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
+    <style>
+        #3d-container {
+            position: fixed;
+            bottom: 120px;
+            right: 30px;
+            width: 250px;
+            height: 250px;
+            z-index: 20;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .message-fade {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+        }
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            margin: 0 2px;
+            background-color: #9CA3AF;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .typing-dot:nth-child(1) {
+            animation: typingAnimation 1.2s infinite ease-in-out;
+        }
+        .typing-dot:nth-child(2) {
+            animation: typingAnimation 1.2s infinite ease-in-out 0.2s;
+        }
+        .typing-dot:nth-child(3) {
+            animation: typingAnimation 1.2s infinite ease-in-out 0.4s;
+        }
+        @keyframes typingAnimation {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-5px); }
+        }
+
+        .score-bar {
+            transition: width 0.5s ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100">
+<header class="bg-gray-800/80 backdrop-blur-sm py-4 px-6 border-b border-gray-700 flex justify-between items-center">
+    <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center">
+            <i class="fas fa-vr-cardboard text-xl"></i>
+        </div>
+        <h1 class="text-xl font-bold">VR英语能力面试模拟</h1>
+    </div>
+    <div class="flex items-center space-x-4">
+        <div id="timer" class="bg-gray-700 px-3 py-1 rounded-full text-sm">
+            <i class="fas fa-clock mr-1"></i> <span>00:00</span>
+        </div>
+        <button id="end-interview" class="bg-red-500 hover:bg-red-600 px-4 py-1 rounded-full text-sm transition-colors">
+            <i class="fas fa-power-off mr-1"></i> 结束面试
+        </button>
+    </div>
+</header>
+
+<main class="container mx-auto px-4 py-6 flex flex-col h-[calc(100vh-140px)]">
+    <div id="chat-container" class="flex-1 overflow-y-auto mb-4 space-y-4">
+        <div class="flex justify-start message-fade">
+            <div class="max-w-3/4 bg-gray-800 rounded-xl p-4 shadow-lg relative">
+                <div class="flex items-start space-x-3">
+                    <div class="flex-shrink-0 w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div>
+                        <p class="font-medium text-indigo-400">AI面试官</p>
+                        <p class="mt-1 text-gray-100">欢迎参加VR英语面试模拟！我们将进行5个英语能力测试问题。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-gray-800/80 backdrop-blur-sm rounded-xl p-4 border border-gray-700">
+        <div class="flex items-end space-x-3">
+            <div class="flex-1 bg-gray-700 rounded-lg p-3 transition-all focus-within:ring-2 focus-within:ring-indigo-500">
+                <textarea
+                        id="message-input"
+                        rows="2"
+                        placeholder="用英语输入您的回答..."
+                        class="w-full bg-transparent outline-none resize-none text-gray-100 placeholder-gray-400"
+                ></textarea>
+                <div class="flex justify-between items-center mt-2 text-xs text-gray-400">
+                    <span>Shift+Enter换行</span>
+                    <span id="char-count">0/1000</span>
+                </div>
+            </div>
+            <button id="send-button" class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg p-3 w-12 h-12 flex items-center justify-center transition-colors">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+</main>
+
+<!-- 3D面试官容器 -->
+<div id="3d-container"></div>
+
+<script>
+    // ================= 配置部分 =================
+    const ZHIPU_API_KEY = '0a054c1af2a547ad9c0b5b2e30213324.8dyER3lGli9FMtLP'; // 替换为真实API密钥
+
+    // ================= DOM元素引用 =================
+    const messageInput = document.getElementById('message-input');
+    const chatContainer = document.getElementById('chat-container');
+    const sendButton = document.getElementById('send-button');
+    const timerDisplay = document.getElementById('timer');
+    const container3D = document.getElementById('3d-container');
+
+    // ================= 系统变量 =================
+    let currentQuestionIndex = 0;
+    let questions = [];
+    let interviewResults = [];
+    let startTime;
+    let timerInterval;
+    let scene, camera, renderer, controls;
+
+    // ================= 3D场景初始化 =================
+    function init3DScene() {
+        console.log('正在初始化3D场景...');
+
+        // 确保容器存在
+        if (!container3D) {
+            console.error('3D容器未找到');
+            return;
+        }
+
+        // 1. 创建场景
+        scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x333333);
+
+        // 2. 添加光照
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
+
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        directionalLight.position.set(1, 1, 1);
+        scene.add(directionalLight);
+
+        // 3. 创建相机
+        camera = new THREE.PerspectiveCamera(
+            45,
+            container3D.clientWidth / container3D.clientHeight,
+            0.1,
+            1000
+        );
+        camera.position.set(0, 1, 3);
+
+        // 4. 创建渲染器
+        renderer = new THREE.WebGLRenderer({
+            antialias: true,
+            alpha: true
+        });
+        renderer.setSize(container3D.clientWidth, container3D.clientHeight);
+
+        // 清除容器内容并添加渲染器
+        container3D.innerHTML = '';
+        container3D.appendChild(renderer.domElement);
+
+        // 5. 添加控制器
+        controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableZoom = true;
+        controls.enablePan = false;
+        controls.target.set(0, 1, 0);
+
+        // 6. 添加占位人物模型
+        createPlaceholderModel();
+
+        // 7. 窗口大小调整事件
+        window.addEventListener('resize', onWindowResize);
+
+        // 8. 开始动画循环
+        animate();
+
+        console.log('3D场景初始化完成');
+    }
+
+    function createPlaceholderModel() {
+        // 创建头部
+        const headGeometry = new THREE.SphereGeometry(0.2, 32, 32);
+        const headMaterial = new THREE.MeshPhongMaterial({
+            color: 0xffccaa,
+            specular: 0x111111,
+            shininess: 30
+        });
+        const head = new THREE.Mesh(headGeometry, headMaterial);
+        head.position.y = 1.6;
+        scene.add(head);
+
+        // 创建身体
+        const bodyGeometry = new THREE.CylinderGeometry(0.3, 0.2, 0.8, 32);
+        const bodyMaterial = new THREE.MeshPhongMaterial({
+            color: 0x4477ff,
+            specular: 0x111111,
+            shininess: 30
+        });
+        const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+        body.position.y = 0.8;
+        scene.add(body);
+
+        // 创建手臂
+        const armGeometry = new THREE.CylinderGeometry(0.08, 0.06, 0.5, 32);
+        const armMaterial = new THREE.MeshPhongMaterial({
+            color: 0xffccaa,
+            specular: 0x111111,
+            shininess: 30
+        });
+
+        // 左臂
+        const leftArm = new THREE.Mesh(armGeometry, armMaterial);
+        leftArm.position.set(-0.3, 1.0, 0);
+        leftArm.rotation.z = Math.PI / 4;
+        scene.add(leftArm);
+
+        // 右臂
+        const rightArm = new THREE.Mesh(armGeometry, armMaterial);
+        rightArm.position.set(0.3, 1.0, 0);
+        rightArm.rotation.z = -Math.PI / 4;
+        scene.add(rightArm);
+
+        // 创建简单的底座
+        const baseGeometry = new THREE.CylinderGeometry(0.5, 0.5, 0.1, 32);
+        const baseMaterial = new THREE.MeshPhongMaterial({
+            color: 0x666666,
+            specular: 0x111111,
+            shininess: 30
+        });
+        const base = new THREE.Mesh(baseGeometry, baseMaterial);
+        base.position.y = 0;
+        scene.add(base);
+    }
+
+    function onWindowResize() {
+        camera.aspect = container3D.clientWidth / container3D.clientHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(container3D.clientWidth, container3D.clientHeight);
+    }
+
+    function animate() {
+        requestAnimationFrame(animate);
+
+        // 简单动画 - 让头部轻微摆动
+        const head = scene.children.find(obj => obj.geometry instanceof THREE.SphereGeometry);
+        if (head) {
+            head.rotation.y = Math.sin(Date.now() * 0.001) * 0.2;
+        }
+
+        controls.update();
+        renderer.render(scene, camera);
+    }
+
+    // ================= 初始化面试 =================
+    async function startInterview() {
+        console.log('开始面试初始化...');
+
+        // 确保3D容器存在且可见
+        if (!container3D) {
+            console.error('3D容器未找到');
+            return;
+        }
+
+        container3D.style.display = 'block';
+
+        // 初始化3D场景
+        try {
+            init3DScene();
+        } catch (error) {
+            console.error('3D场景初始化失败:', error);
+            container3D.innerHTML = '<div class="text-white p-4">3D场景加载失败</div>';
+        }
+
+        try {
+            const response = await fetch('https://open.bigmodel.cn/api/paas/v4/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${ZHIPU_API_KEY}`
+                },
+                body: JSON.stringify({
+                    model: "glm-4",
+                    messages: [{
+                        role: "user",
+                        content: `生成5个纯英文IT面试问题，要求：
+                        1. 每行一个，无编号
+                        2. 包含技术场景
+                        3. 使用示例格式：
+                           Describe your approach to troubleshooting network issues
+                           How would you explain cloud computing to non-technical clients?
+                           Role-play handling a dissatisfied client`
+                    }],
+                    temperature: 0.7
+                })
+            });
+
+            const data = await response.json();
+            const rawQuestions = data.choices[0].message.content;
+
+            questions = rawQuestions
+                .split(/\n+/)
+                .map(q => q.replace(/^\d+[\.\)\s]*/, '').trim())
+                .filter(q => q.length > 15)
+                .slice(0, 5)
+                .map((q, i) => ({ id: `q-${i}`, text: q }));
+
+            startTime = Date.now();
+            timerInterval = setInterval(updateTimerDisplay, 1000);
+            displayCurrentQuestion();
+
+        } catch (error) {
+            console.error('初始化失败:', error);
+            questions = [
+                { id: 'q1', text: 'Describe a technical challenge you faced and how you resolved it.' },
+                { id: 'q2', text: 'How would you explain cloud computing to non-technical clients?' },
+                { id: 'q3', text: 'Role-play handling a customer complaint about software issues.' },
+                { id: 'q4', text: 'Interpret network traffic data and suggest optimizations.' },
+                { id: 'q5', text: 'Rewrite technical documentation for client understanding.' }
+            ];
+            displayCurrentQuestion();
+        }
+    }
+
+    // ================= 显示当前问题 =================
+    function displayCurrentQuestion() {
+        if (currentQuestionIndex < questions.length) {
+            addMessage({
+                sender: 'ai',
+                content: `问题 ${currentQuestionIndex + 1}/${questions.length}: ${questions[currentQuestionIndex].text}`
+            });
+        }
+    }
+
+    // ================= 回答处理 =================
+    async function submitAnswer() {
+        const answer = messageInput.value.trim();
+        if (!answer) return showError('请输入回答内容');
+
+        addMessage({ sender: 'user', content: answer });
+        messageInput.value = '';
+        updateCharCount();
+
+        try {
+            showLoading(true);
+
+            // 获取评分
+            const evaluation = await getAIEvaluation(
+                questions[currentQuestionIndex].text,
+                answer
+            );
+
+            // 计算总分（五个分项之和）
+            const totalScore = Object.values(evaluation.breakdown).reduce((sum, item) => sum + item.score, 0);
+            evaluation.total_score = totalScore;
+
+            // 存储结果
+            interviewResults.push({
+                question: questions[currentQuestionIndex].text,
+                answer: answer,
+                evaluation: evaluation
+            });
+
+            // 显示评分
+            showEvaluation(evaluation);
+
+            currentQuestionIndex++;
+            if(currentQuestionIndex < questions.length) {
+                setTimeout(displayCurrentQuestion, 1500);
+            } else {
+                generateFinalReport();
+            }
+
+        } catch (error) {
+            console.error('评分失败:', error);
+            showError('评分失败，继续下一题');
+            currentQuestionIndex++;
+            displayCurrentQuestion();
+        } finally {
+            showLoading(false);
+        }
+    }
+
+    // ================= AI评分函数 =================
+    async function getAIEvaluation(question, answer) {
+        const response = await fetch('https://open.bigmodel.cn/api/paas/v4/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${ZHIPU_API_KEY}`
+            },
+            body: JSON.stringify({
+                model: "glm-4",
+                messages: [{
+                    role: "user",
+                    content: `根据以下面试回答进行评分（返回JSON）：
+                    问题：${question}
+                    回答：${answer}
+
+                    评分标准（每个分项满分20分）：
+                    1. 语言流利度 (0-20)
+                    2. 技术准确性 (0-20)
+                    3. 逻辑清晰度 (0-20)
+                    4. 文化适应性 (0-20)
+                    5. 问题解决能力 (0-20)
+
+                    返回格式：
+                    {
+                        "breakdown": {
+                            "language_fluency": {"score": 分数, "comment": "评语"},
+                            "technical_accuracy": {"score": 分数, "comment": "评语"},
+                            "clarity": {"score": 分数, "comment": "评语"},
+                            "cultural_appropriateness": {"score": 分数, "comment": "评语"},
+                            "problem_solving": {"score": 分数, "comment": "评语"}
+                        },
+                        "overall_comment": "总体评价"
+                    }`
+                }],
+                temperature: 0.5
+            })
+        });
+
+        const data = await response.json();
+        try {
+            // 尝试解析JSON内容
+            const content = data.choices[0].message.content;
+            const jsonStart = content.indexOf('{');
+            const jsonEnd = content.lastIndexOf('}') + 1;
+            const jsonString = content.slice(jsonStart, jsonEnd);
+            const result = JSON.parse(jsonString);
+
+            // 确保所有分数在0-20范围内
+            Object.values(result.breakdown).forEach(item => {
+                item.score = Math.max(0, Math.min(20, item.score || 0));
+            });
+
+            return result;
+        } catch (e) {
+            console.error('解析评分失败:', e);
+            // 如果解析失败，返回默认结构
+            return {
+                breakdown: {
+                    language_fluency: { score: Math.floor(Math.random() * 15 + 5), comment: "语言表达基本流畅" },
+                    technical_accuracy: { score: Math.floor(Math.random() * 15 + 5), comment: "技术描述基本准确" },
+                    clarity: { score: Math.floor(Math.random() * 15 + 5), comment: "逻辑结构基本清晰" },
+                    cultural_appropriateness: { score: Math.floor(Math.random() * 15 + 5), comment: "文化适应性良好" },
+                    problem_solving: { score: Math.floor(Math.random() * 15 + 5), comment: "展示了问题解决能力" }
+                },
+                overall_comment: "整体表现良好，有提升空间"
+            };
+        }
+    }
+
+    // ================= 显示评分 =================
+    function showEvaluation(evaluation) {
+        const totalScore = evaluation.total_score;
+        const scoreColor = totalScore >= 80 ? 'text-green-400' :
+            totalScore >= 60 ? 'text-yellow-400' : 'text-red-400';
+
+        addMessage({
+            sender: 'ai',
+            content: `
+                <div class="space-y-3">
+                    <div class="flex items-center space-x-3">
+                        <span class="${scoreColor} font-bold text-2xl">${totalScore}分</span>
+                        <div class="flex-1 bg-gray-700 h-2 rounded-full">
+                            <div class="score-bar bg-indigo-500 h-2 rounded-full"
+                                 style="width: ${totalScore}%"></div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        ${Object.entries(evaluation.breakdown).map(([key, item]) => `
+                            <div class="bg-gray-700 p-3 rounded-lg">
+                                <div class="flex justify-between items-center mb-1">
+                                    <span class="text-sm">${getChineseLabel(key)}</span>
+                                    <span class="text-indigo-400">${item.score}/20</span>
+                                </div>
+                                <p class="text-xs text-gray-300">${item.comment}</p>
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <div class="bg-indigo-900/30 p-3 rounded-lg">
+                        <p class="text-sm text-indigo-300">${evaluation.overall_comment}</p>
+                    </div>
+                </div>
+            `,
+            isHTML: true
+        });
+    }
+
+    // ================= 生成最终报告 =================
+    async function generateFinalReport() {
+        try {
+            showLoading(true, '正在生成最终报告...');
+
+            const report = await getFinalReport();
+
+            addMessage({
+                sender: 'ai',
+                content: `
+                    <div class="space-y-4">
+                        <h3 class="text-xl font-bold text-indigo-400">📊 面试分析报告</h3>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-gray-800 p-4 rounded-xl">
+                                <div class="text-3xl font-bold text-green-400">${report.average_score}</div>
+                                <div class="text-sm">平均得分</div>
+                            </div>
+                            <div class="bg-gray-800 p-4 rounded-xl">
+                                <div class="text-3xl font-bold">${report.highest_score}</div>
+                                <div class="text-sm">最高单项得分</div>
+                            </div>
+                        </div>
+
+                        <div class="bg-gray-800 p-4 rounded-xl">
+                            <h4 class="font-bold mb-3">📈 能力分布</h4>
+                            <div class="space-y-3">
+                                ${Object.entries(report.skill_distribution).map(([skill, score]) => `
+                                    <div class="flex items-center space-x-2">
+                                        <div class="w-24 text-sm">${getChineseLabel(skill)}</div>
+                                        <div class="flex-1 bg-gray-700 h-2 rounded-full">
+                                            <div class="score-bar bg-indigo-500 h-2 rounded-full"
+                                                 style="width: ${score}%"></div>
+                                        </div>
+                                        <div class="w-10 text-right">${score}%</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <div class="bg-gray-800 p-4 rounded-xl space-y-3">
+                            <h4 class="font-bold">✅ 优势分析</h4>
+                            <ul class="list-disc list-inside space-y-1">
+                                ${report.strengths.map(s => `<li>${s}</li>`).join('')}
+                            </ul>
+                        </div>
+
+                        <div class="bg-gray-800 p-4 rounded-xl space-y-3">
+                            <h4 class="font-bold">💡 改进建议</h4>
+                            <ul class="list-disc list-inside space-y-1">
+                                ${report.improvements.map(s => `<li>${s}</li>`).join('')}
+                            </ul>
+                        </div>
+                    </div>
+                `,
+                isHTML: true
+            });
+
+        } catch (error) {
+            console.error('报告生成失败:', error);
+            showError('报告生成失败，以下是您的面试结果摘要');
+
+            // 计算平均分和最高分
+            const totalScores = interviewResults.map(r => r.evaluation.total_score);
+            const averageScore = Math.round(totalScores.reduce((a, b) => a + b, 0) / totalScores.length);
+            const highestScore = Math.max(...totalScores);
+
+            // 生成简单的报告
+            addMessage({
+                sender: 'ai',
+                content: `
+                    <div class="space-y-4">
+                        <h3 class="text-xl font-bold text-indigo-400">📊 面试结果摘要</h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-gray-800 p-4 rounded-xl">
+                                <div class="text-3xl font-bold text-green-400">${averageScore}</div>
+                                <div class="text-sm">平均得分</div>
+                            </div>
+                            <div class="bg-gray-800 p-4 rounded-xl">
+                                <div class="text-3xl font-bold">${highestScore}</div>
+                                <div class="text-sm">最高单项得分</div>
+                            </div>
+                        </div>
+                        <div class="bg-gray-800 p-4 rounded-xl space-y-3">
+                            <h4 class="font-bold">💡 建议</h4>
+                            <ul class="list-disc list-inside space-y-1">
+                                <li>继续练习英语口语表达</li>
+                                <li>加强技术术语的掌握</li>
+                                <li>注意回答问题的逻辑结构</li>
+                            </ul>
+                        </div>
+                    </div>
+                `,
+                isHTML: true
+            });
+        } finally {
+            showLoading(false);
+            messageInput.disabled = true;
+            sendButton.disabled = true;
+        }
+    }
+
+    async function getFinalReport() {
+        const response = await fetch('https://open.bigmodel.cn/api/paas/v4/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${ZHIPU_API_KEY}`
+            },
+            body: JSON.stringify({
+                model: "glm-4",
+                messages: [{
+                    role: "user",
+                    content: `根据面试结果生成综合报告（返回JSON格式）：
+                    ${JSON.stringify(interviewResults)}
+
+                    要求：
+                    1. 计算平均分和最高分（每个问题总分100分）
+                    2. 分析各能力维度的百分比分布
+                    3. 列出3条优势分析
+                    4. 列出3条改进建议
+
+                    返回格式：
+                    {
+                        "average_score": "平均分",
+                        "highest_score": "最高分",
+                        "skill_distribution": {
+                            "language_fluency": 百分比,
+                            "technical_accuracy": 百分比,
+                            "clarity": 百分比,
+                            "cultural_appropriateness": 百分比,
+                            "problem_solving": 百分比
+                        },
+                        "strengths": ["优势1", "优势2", "优势3"],
+                        "improvements": ["建议1", "建议2", "建议3"]
+                    }`
+                }],
+                temperature: 0.5
+            })
+        });
+
+        const data = await response.json();
+        try {
+            // 尝试解析JSON内容
+            const content = data.choices[0].message.content;
+            const jsonStart = content.indexOf('{');
+            const jsonEnd = content.lastIndexOf('}') + 1;
+            const jsonString = content.slice(jsonStart, jsonEnd);
+            return JSON.parse(jsonString);
+        } catch (e) {
+            console.error('解析报告失败:', e);
+            // 如果解析失败，生成默认报告
+            const totalScores = interviewResults.map(r => r.evaluation.total_score);
+            const averageScore = Math.round(totalScores.reduce((a, b) => a + b, 0) / totalScores.length);
+            const highestScore = Math.max(...totalScores);
+
+            return {
+                average_score: averageScore,
+                highest_score: highestScore,
+                skill_distribution: {
+                    language_fluency: Math.round(Math.random() * 30 + 60),
+                    technical_accuracy: Math.round(Math.random() * 30 + 60),
+                    clarity: Math.round(Math.random() * 30 + 60),
+                    cultural_appropriateness: Math.round(Math.random() * 30 + 60),
+                    problem_solving: Math.round(Math.random() * 30 + 60)
+                },
+                strengths: [
+                    "英语表达基本流畅",
+                    "能够准确描述技术问题",
+                    "展示了良好的沟通能力"
+                ],
+                improvements: [
+                    "需要加强技术术语的准确性",
+                    "可以更系统地组织回答结构",
+                    "建议增加实际案例来支持观点"
+                ]
+            };
+        }
+    }
+
+    // ================= 工具函数 =================
+    function addMessage({ sender, content, isHTML = false }) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `flex ${sender === 'user' ? 'justify-end' : 'justify-start'} message-fade mb-4`;
+
+        messageDiv.innerHTML = `
+            <div class="max-w-3/4 bg-gray-800 rounded-xl p-4 shadow-lg">
+                <div class="flex items-start space-x-3">
+                    <div class="flex-shrink-0 w-10 h-10 rounded-full ${
+            sender === 'ai' ? 'bg-indigo-600' : 'bg-gray-600'
+        } flex items-center justify-center text-white">
+                        <i class="fas ${sender === 'ai' ? 'fa-robot' : 'fa-user'}"></i>
+                    </div>
+                    <div class="min-w-0">
+                        <p class="font-medium ${
+            sender === 'ai' ? 'text-indigo-400' : 'text-gray-300'
+        }">${sender === 'ai' ? '面试官' : '您'}</p>
+                        <div class="mt-1 text-gray-100 ${isHTML ? '' : 'whitespace-pre-wrap'}">
+                            ${isHTML ? content : content.replace(/\n/g, '<br>')}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        chatContainer.appendChild(messageDiv);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    function getChineseLabel(key) {
+        const labels = {
+            'language_fluency': '语言流利度',
+            'technical_accuracy': '技术准确性',
+            'clarity': '逻辑清晰度',
+            'cultural_appropriateness': '文化适应性',
+            'problem_solving': '问题解决'
+        };
+        return labels[key] || key;
+    }
+
+    // ================= 其他辅助函数 =================
+    function updateTimerDisplay() {
+        const elapsed = Math.floor((Date.now() - startTime) / 1000);
+        const mins = String(Math.floor(elapsed / 60)).padStart(2, '0');
+        const secs = String(elapsed % 60).padStart(2, '0');
+        timerDisplay.querySelector('span').textContent = `${mins}:${secs}`;
+    }
+
+    function showLoading(show, message = '') {
+        const indicator = document.getElementById('typing-indicator');
+        if (show) {
+            if (!indicator) {
+                const div = document.createElement('div');
+                div.id = 'typing-indicator';
+                div.className = 'flex justify-start message-fade mb-4';
+                div.innerHTML = `
+                    <div class="max-w-3/4 bg-gray-800 rounded-xl p-4 shadow-lg">
+                        <div class="flex items-center space-x-3">
+                            <div class="flex-shrink-0 w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <div class="typing-indicator">
+                                <div class="typing-dot"></div>
+                                <div class="typing-dot"></div>
+                                <div class="typing-dot"></div>
+                                ${message ? `<span class="ml-2 text-gray-300">${message}</span>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                chatContainer.appendChild(div);
+            }
+        } else if (indicator) {
+            indicator.remove();
+        }
+    }
+
+    function showError(message) {
+        const div = document.createElement('div');
+        div.className = 'flex justify-start message-fade mb-4';
+        div.innerHTML = `
+            <div class="max-w-3/4 bg-red-900 rounded-xl p-4 shadow-lg">
+                <div class="flex items-start space-x-3">
+                    <div class="flex-shrink-0 w-10 h-10 rounded-full bg-red-600 flex items-center justify-center text-white">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div>
+                        <p class="font-medium text-red-300">系统提示</p>
+                        <p class="mt-1 text-gray-100">${message}</p>
+                    </div>
+                </div>
+            </div>
+        `;
+        chatContainer.appendChild(div);
+    }
+
+    function updateCharCount() {
+        const count = messageInput.value.length;
+        document.getElementById('char-count').textContent = `${count}/1000`;
+    }
+
+    // ================= 事件监听 =================
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log('DOM已加载，开始初始化...');
+        startInterview();
+    });
+
+    sendButton.addEventListener('click', submitAnswer);
+    messageInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            submitAnswer();
+        }
+    });
+    messageInput.addEventListener('input', updateCharCount);
+</script>
+</body>
+</html>

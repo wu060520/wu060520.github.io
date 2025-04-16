@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>智能简历评估系统</title>
+    <style>
+        body {
+            font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #f8f4ff, #f3ebff);
+            padding: 30px;
+            min-height: 100vh;
+        }
+        .back-home {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #6a4aad;
+            text-decoration: none;
+            border-radius: 8px;
+            border: 1px solid #e8e0ff;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(106, 74, 173, 0.1);
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .back-home:hover {
+            transform: translateY(-1px);
+            background: rgba(255, 255, 255, 1);
+            box-shadow: 0 4px 12px rgba(106, 74, 173, 0.2);
+            color: #7d5eb3;
+            border-color: #b794f4;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 12px 40px rgba(106, 74, 173, 0.1);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container:before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(183, 148, 244, 0.1), transparent);
+            transform: rotate(30deg);
+            pointer-events: none;
+        }
+
+        h1 {
+            color: #6a4aad;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            font-weight: 600;
+            text-shadow: 0 2px 4px rgba(106, 74, 173, 0.1);
+            position: relative;
+        }
+
+        h1:after {
+            content: '✍️';
+            display: block;
+            font-size: 1.2em;
+            margin-top: 10px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 250px;
+            padding: 20px;
+            font-size: 16px;
+            border-radius: 12px;
+            border: 2px solid #e8e0ff;
+            background: rgba(255, 255, 255, 0.9);
+            transition: all 0.3s ease;
+            line-height: 1.6;
+        }
+
+        textarea:focus {
+            border-color: #b794f4;
+            box-shadow: 0 4px 12px rgba(183, 148, 244, 0.2);
+            outline: none;
+        }
+
+        button {
+            background: linear-gradient(135deg, #9b7dd4, #6a4aad);
+            color: white;
+            padding: 14px 32px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            margin-top: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 15px rgba(106, 74, 173, 0.3);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(106, 74, 173, 0.4);
+        }
+
+        .result {
+            margin-top: 40px;
+            background: rgba(255, 255, 255, 0.95);
+            border-left: 4px solid #b794f4;
+            padding: 25px;
+            border-radius: 14px;
+            line-height: 1.7;
+            color: #5a4a6a;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(232, 224, 255, 0.5);
+            box-shadow: 0 6px 20px rgba(183, 148, 244, 0.1);
+        }
+
+        .loader {
+            display: none;
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .loader.active {
+            display: block;
+        }
+
+        .loader span {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            margin: 0 5px;
+            background: #b794f4;
+            border-radius: 50%;
+            animation: bounce 0.6s infinite alternate;
+        }
+
+        @keyframes bounce {
+            to {
+                transform: translateY(-10px);
+                opacity: 0.6;
+            }
+        }
+
+        .loader p {
+            color: #8c7aa5;
+            margin-top: 15px;
+            font-size: 0.95em;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <a href="welcome.html" class="back-home">← 返回主页</a>
+    <h1>📄 智能简历评估系统</h1>
+    <form id="resumeForm">
+        <textarea id="resumeText" name="resumeText" placeholder="请粘贴您的简历内容..." required></textarea>
+        <button type="submit">提交评估</button>
+    </form>
+
+    <div class="loader" id="loader">
+        <span></span><span></span><span></span>
+        <p>AI正在分析中，请稍候...</p>
+    </div>
+
+    <div class="result" id="result"></div>
+</div>
+
+<script>
+    document.getElementById('resumeForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        // 显示加载动画
+        document.getElementById('loader').classList.add('active');
+        document.getElementById('result').innerHTML = '';
+
+        var resumeText = document.getElementById('resumeText').value.trim();
+        if (!resumeText) {
+            document.getElementById('loader').classList.remove('active');
+            document.getElementById('result').innerHTML = '请输入简历内容。';
+            return;
+        }
+
+        // API 配置
+        var api_key = "0f509ce0d8e34ba0b61fde13c0226b2b.M7SJMe9N7m4uzuos";
+        var api_url = "https://open.bigmodel.cn/api/paas/v4/chat/completions";
+
+        var data = {
+            model: "glm-4",
+            messages: [
+                {
+                    role: "system",
+                    content: "你是一个专业的简历评估专家，请从以下方面评估用户的简历内容：\n1. 内容完整性（是否包括基本信息、教育背景、工作经历、项目经验、技能等）\n2. 逻辑结构与清晰度\n3. 用词专业度\n4. 是否有量化成果\n5. 是否存在语法错误\n6. 是否匹配目标岗位\n请给出一个综合评分（百分制），并提供详细的优化建议。"
+                },
+                {
+                    role: "user",
+                    content: "以下是我的简历内容，请进行评估：\n" + resumeText
+                }
+            ],
+            temperature: 0.7
+        };
+
+        // 发起请求
+        fetch(api_url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + api_key
+            },
+            body: JSON.stringify(data)
+        })
+        .then(function(response) {
+            if (response.ok) {
+                return response.json();
+            } else {
+                throw new Error("请求失败，状态码：" + response.status);
+            }
+        })
+        .then(function(res) {
+            if (res.choices && res.choices[0] && res.choices[0].message && res.choices[0].message.content) {
+                // 将换行符转换为 <br> 标签以便在 HTML 中显示
+                document.getElementById('result').innerHTML = res.choices[0].message.content.replace(/\n/g, "<br>");
+            } else {
+                document.getElementById('result').innerHTML = "AI返回结构异常：" + JSON.stringify(res);
+            }
+        })
+        .catch(function(error) {
+            document.getElementById('result').innerHTML = "请求失败：" + error.message;
+        })
+        .finally(function() {
+            document.getElementById('loader').classList.remove('active');
+        });
+    });
+</script>
+</body>
+</html>

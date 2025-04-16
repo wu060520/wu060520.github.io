@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>大学生职业成长导航系统</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;500&display=swap">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary-color: #2c3e50;
+      --secondary-color: #A393EB;
+      --accent-color: #A393EB;
+      --bg-gradient: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+      --background-color: #f8f9fa;
+      --card-bg: #ffffff;
+      --text-color: #333;
+    }
+    body {
+      font-family: 'Noto Sans SC', sans-serif;
+      background-color: var(--background-color);
+      margin: 0;
+      padding: 0;
+    }
+    .hero {
+      background: var(--bg-gradient);
+      color: white;
+      padding: 60px 20px;
+      text-align: center;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      position: relative;
+    }
+    .hero h1 {
+      font-size: 2.5rem;
+      font-weight: 600;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+      margin: 20px 0;
+    }
+    .user-info {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: rgba(255,255,255,0.9);
+      padding: 8px 15px;
+      border-radius: 20px;
+      color: var(--primary-color);
+      font-weight: 500;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      display: none; /* 这里没有登录功能 */
+    }
+    .form-container {
+      max-width: 800px;
+      margin: 40px auto;
+      background: var(--card-bg);
+      border-radius: 12px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+      padding: 30px;
+    }
+    .form-section {
+      margin: 25px 0;
+      padding: 20px;
+      border-left: 4px solid var(--secondary-color);
+      background: #f8f9fa;
+      border-radius: 6px;
+    }
+    form {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+    form label {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--primary-color);
+      font-weight: 500;
+    }
+    form input, form textarea {
+      width: 100%;
+      padding: 10px;
+      border: 2px solid #e0e0e0;
+      border-radius: 6px;
+      font-size: 14px;
+      transition: border-color 0.3s;
+    }
+    form input:focus, form textarea:focus {
+      border-color: var(--secondary-color);
+      outline: none;
+    }
+    .button-group {
+      grid-column: span 2;
+      display: flex;
+      gap: 15px;
+      margin-top: 30px;
+    }
+    .button {
+      flex: 1;
+      padding: 12px 24px;
+      background: var(--bg-gradient);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      text-align: center;
+      text-decoration: none;
+    }
+    .button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(42,45,114,0.2);
+    }
+    /* loading 效果 */
+    #loadingMessage {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255,255,255,0.9);
+      z-index: 9999;
+      display: none;
+      justify-content: center;
+      align-items: center;
+    }
+    .loader-container {
+      text-align: center;
+      padding: 20px;
+      background: rgba(0, 0, 0, 0.8);
+      border-radius: 10px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.2);
+    }
+    .loader {
+      width: 50px;
+      height: 50px;
+      margin: 0 auto 15px;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #3498db;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    .loading-text {
+      color: white;
+      font-size: 18px;
+      font-weight: bold;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    /* 匹配结果和建议区域 */
+    .result-section {
+      margin-top: 40px;
+      padding: 30px;
+      border-radius: 15px;
+      background: #f9fafb;
+      border-left: 4px solid var(--accent-color);
+    }
+    .result-section h2 {
+      color: var(--primary-color);
+      margin-top: 0;
+      font-weight: 600;
+    }
+    .result-section p {
+      line-height: 1.8;
+      color: #555;
+      font-size: 16px;
+      white-space: pre-wrap;
+    }
+    .return-btn {
+      display: inline-flex;
+      align-items: center;
+      margin-bottom: 30px;
+      text-decoration: none;
+      color: #fff;
+      background: var(--primary-color);
+      padding: 12px 25px;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(42,45,114,0.2);
+    }
+    .return-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(42,45,114,0.3);
+    }
+  </style>
+</head>
+<body>
+  <section class="hero">
+    <h1>匹配你的职业</h1>
+  </section>
+
+  <!-- 第一部分：用户填写个人信息 -->
+  <div class="form-container" id="matchFormContainer">
+    <div class="form-section">
+      <a href="index.html" class="return-btn">← 返回首页</a>
+      <h3>1）个人信息填写</h3>
+      <form id="matchForm">
+        <div>
+          <label>姓名:</label>
+          <input type="text" name="name" required>
+        </div>
+        <div>
+          <label>MBTI:</label>
+          <input type="text" name="MBTI" required>
+        </div>
+        <div>
+          <label>学校:</label>
+          <input type="text" name="school" required>
+        </div>
+        <div>
+          <label>专业:</label>
+          <input type="text" name="major" required>
+        </div>
+        <div>
+          <label>学历:</label>
+          <input type="text" name="education_background" required>
+        </div>
+        <div>
+          <label>理想就职地:</label>
+          <input type="text" name="place" required>
+        </div>
+        <div style="grid-column: span 2">
+          <label>就业意向:</label>
+          <textarea name="career_idea" rows="4" required></textarea>
+        </div>
+        <div class="button-group" style="grid-column: span 2">
+          <button type="submit" class="button">提交信息并匹配职业</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 第二部分：显示匹配结果及职业路径建议 -->
+  <div class="form-container" id="adviceContainer" style="display:none;">
+    <a href="#" class="return-btn" onclick="location.reload(); return false;">← 返回首页</a>
+    <h1>职业成长路径规划系统</h1>
+    <form id="adviceForm">
+      <div>
+        <label>匹配职业:</label>
+        <!-- 此处预填第一步匹配结果，可修改 -->
+        <input type="text" name="career" id="careerInput" required>
+      </div>
+      <div class="button-group">
+        <button type="submit" class="button">生成建议</button>
+      </div>
+    </form>
+    <div class="result-section" id="adviceResult">
+      <h2>职业发展建议报告</h2>
+      <p id="adviceContent"></p>
+    </div>
+  </div>
+
+  <!-- loading 效果 -->
+  <div id="loadingMessage">
+    <div class="loader-container">
+      <div class="loader"></div>
+      <div class="loading-text">AI正在分析中，请稍候...</div>
+    </div>
+  </div>
+
+  <script>
+    // 请注意：API Key 直接写在前端存在安全风险，此处仅用于测试演示！
+    const apiKey = "0f509ce0d8e34ba0b61fde13c0226b2b.M7SJMe9N7m4uzuos";
+    const apiUrl = "https://open.bigmodel.cn/api/paas/v4/chat/completions";
+
+    // 显示/隐藏 loading 效果
+    function showLoading() {
+      document.getElementById("loadingMessage").style.display = "flex";
+    }
+    function hideLoading() {
+      document.getElementById("loadingMessage").style.display = "none";
+    }
+
+    // 第一部分：匹配职业
+    const matchForm = document.getElementById("matchForm");
+    matchForm.addEventListener("submit", async function(e) {
+      e.preventDefault();
+      showLoading();
+      // 获取表单数据
+      const formData = new FormData(matchForm);
+      const name = formData.get("name").trim();
+      const mbti = formData.get("MBTI").trim();
+      const school = formData.get("school").trim();
+      const major = formData.get("major").trim();
+      const education = formData.get("education_background").trim();
+      const place = formData.get("place").trim();
+      const careerIdea = formData.get("career_idea").trim();
+
+      // 构造提示信息（prompt）
+      const prompt = "你是职业分析师，根据以下信息推荐一个最适合的职业，我不要你进行文字性质的输出分析，你只需在你的知识图谱里面分析最后只需输出一个职业或两个职业。要根据他的学校等级、专业、学历来进行推荐（不用文字性质的输出，只需要输出一个职业即可），一定要考虑用户个人的就职意向。你只需要输出一个职业即可，不用进行文字输出性质的分析，你只需要根据用户的这些信息，输出一个职业名词，其它任何文字都不要输出\n" +
+                     "姓名：" + name + "\n" +
+                     "MBTI类型：" + mbti + "\n" +
+                     "学校：" + school + "\n" +
+                     "专业：" + major + "\n" +
+                     "学历：" + education + "\n" +
+                     "理想就业地：" + place + "\n" +
+                     "就业意向：" + careerIdea;
+
+      // 构造请求数据
+      const requestData = {
+        model: "glm-4",
+        messages: [
+          { role: "system", content: "你是一个专业的职业推荐系统。" },
+          { role: "user", content: prompt }
+        ],
+        temperature: 0.7,
+        top_p: 0.9
+      };
+
+      try {
+        const response = await fetch(apiUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + apiKey
+          },
+          body: JSON.stringify(requestData)
+        });
+        if (response.ok) {
+          const data = await response.json();
+          let matchedCareer = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
+          if (!matchedCareer) {
+            matchedCareer = "未知职业";
+          }
+          // 填充到第二部分的 input 中
+          document.getElementById("careerInput").value = matchedCareer;
+          // 切换到第二部分页面
+          document.getElementById("matchFormContainer").style.display = "none";
+          document.getElementById("adviceContainer").style.display = "block";
+        } else {
+          alert("AI接口请求失败！状态码：" + response.status);
+        }
+      } catch (err) {
+        alert("请求错误：" + err.message);
+        console.error("请求错误：", err);
+      } finally {
+        hideLoading();
+      }
+    });
+
+    // 第二部分：生成职业建议
+    const adviceForm = document.getElementById("adviceForm");
+    adviceForm.addEventListener("submit", async function(e) {
+      e.preventDefault();
+      showLoading();
+      const career = document.getElementById("careerInput").value.trim();
+      // 构造提示信息
+      const promptAdvice = "你是一个职业路径规划顾问，能详细分析如何从零开始成为某个职业，并给出具体步骤。\n请告诉我如何成为：" + career;
+
+      const requestDataAdvice = {
+        model: "glm-4",
+        messages: [
+          { role: "system", content: "你是一个职业路径规划顾问，能详细分析如何从零开始成为某个职业，并给出具体步骤。" },
+          { role: "user", content: promptAdvice }
+        ],
+        temperature: 0.7,
+        top_p: 0.9
+      };
+
+      try {
+        const response = await fetch(apiUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + apiKey
+          },
+          body: JSON.stringify(requestDataAdvice)
+        });
+        if (response.ok) {
+          const data = await response.json();
+          let advice = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
+          if (!advice) {
+            advice = "未能生成建议";
+          }
+          document.getElementById("adviceContent").textContent = advice;
+        } else {
+          document.getElementById("adviceContent").textContent = "AI接口请求失败！状态码：" + response.status;
+        }
+      } catch (err) {
+        document.getElementById("adviceContent").textContent = "请求错误：" + err.message;
+        console.error("请求错误：", err);
+      } finally {
+        hideLoading();
+      }
+    });
+  </script>
+</body>
+</html>
